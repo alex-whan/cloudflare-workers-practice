@@ -28,32 +28,32 @@ class LinksTransformer {
     }
     // This will be called every time that HTMLRewriter detects an element that matches the selector you pass in to the HTMLRewriter - any time it finds one of those tags (i.e. element.tagName === 'meta'), it'll call that function, passing in the element as the function argument
     async element(element) {
-        console.log(`Incoming Element: ${element.keys}`)
-        console.log('THIS LINKS ????', this.links)
-        // setInnerContent
         this.links.forEach(link => {
             element.append(`<a href='${link.url}'>${link.name}</a>`, {
                 html: true,
-            }) // maybe remove await
+            })
         })
     }
 }
 
 class ProfileFixer {
     async element(element) {
-        element.removeAttribute('style') // .on('#profile', setAttribute())
+        element.removeAttribute('style')
     }
 }
 
 class AvatarFixer {
     async element(element) {
-        element.setAttribute('src', 'coolprofileimage.jpg')
+        element.setAttribute(
+            'src',
+            'https://images.unsplash.com/photo-1537815749002-de6a533c64db?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=845&q=80'
+        )
     }
 }
 
 class TitleFixer {
     async element(element) {
-        element.setInnerContent('My USERNAME')
+        element.setInnerContent('Alex Whan')
     }
 }
 
@@ -106,7 +106,7 @@ async function pageHandler(request) {
         .transform(results)
 }
 
-function linkHandler(request) {
+function linksHandler(request) {
     const init = {
         headers: { 'content-type': 'application/json' },
     }
@@ -118,7 +118,7 @@ function linkHandler(request) {
 // need to hit localhost:8000/links - hitting 8787 right now. How do I change that?
 async function handleRequest(request) {
     const router = new Router()
-    router.get('.*/links', request => linkHandler(request))
+    router.get('.*/links', request => linksHandler(request))
     router.get('.*/*', request => pageHandler(request))
 
     const res = await router.route(request)
