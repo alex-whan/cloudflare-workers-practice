@@ -1,18 +1,6 @@
 // 'use strict'
 
-/* Deploy a JSON API
-Create a new Workers project using Wrangler. This project will respond to two kinds of requests, one to generate a JSON API (defined below), and second, to serve an HTML page (see "Set up an HTML page")
-
-To begin, you should define an array of links. The links should be a JavaScript array, with a number of link objects, each with a name and URL string. See the below example for one of these link objects:
-
-{ "name": "Link Name", "url": "https://linkurl" }
-You should define at least three link objects inside of your array.
-
-Once you've defined this array, set up a request handler to respond to the path /links, and return the array itself as the root of your JSON response.
-
-In addition, you should ensure that the API response has the correct Content-Type header to indicate to clients that it is a JSON response.
-
-You should be able to test that this works as expect by running wrangler dev to access your Workers application locally. Visit localhost:8000/links to confirm that your application returns the link array as a JSON response. */
+/* You should be able to test that this works as expect by running wrangler dev to access your Workers application locally. Visit localhost:8000/links to confirm that your application returns the link array as a JSON response. */
 
 const Router = require('./router')
 
@@ -38,7 +26,6 @@ class LinksTransformer {
     constructor(links) {
         this.links = links
     }
-
     // This will be called every time that HTMLRewriter detects an element that matches the selector you pass in to the HTMLRewriter - any time it finds one of those tags (i.e. element.tagName === 'meta'), it'll call that function, passing in the element as the function argument
     async element(element) {
         console.log(`Incoming Element: ${element.keys}`)
@@ -49,6 +36,18 @@ class LinksTransformer {
                 html: true,
             }) // maybe remove await
         })
+    }
+}
+
+class ProfileFixer {
+    async element(element) {
+        element.removeAttribute('style') // .on('#profile', setAttribute())
+    }
+}
+
+class AvatarFixer {
+    async element(element) {
+        element.setAttribute('src', 'coolprofileimage.jpg')
     }
 }
 
@@ -93,12 +92,11 @@ async function pageHandler(request) {
     // const results = await displayLinks(preResults)
     // console.log('RESULTSSSSSSS', results)
     const results = new Response(preResults, init)
-    return (
-        new HTMLRewriter()
-            .on('#links', new LinksTransformer(linkArray))
-            // .on('#profile', setAttribute())
-            .transform(results)
-    )
+    return new HTMLRewriter()
+        .on('#links', new LinksTransformer(linkArray))
+        .on('#profile', new ProfileFixer())
+        .on('#avatar', new AvatarFixer())
+        .transform(results)
 }
 
 function linkHandler(request) {
