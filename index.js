@@ -51,6 +51,12 @@ class AvatarFixer {
     }
 }
 
+class TitleFixer {
+    async element(element) {
+        element.setInnerContent('My USERNAME')
+    }
+}
+
 // async function displayLinks(response, links) {
 //     const rewriter = new HTMLRewriter().on(
 //         '#links',
@@ -96,6 +102,7 @@ async function pageHandler(request) {
         .on('#links', new LinksTransformer(linkArray))
         .on('#profile', new ProfileFixer())
         .on('#avatar', new AvatarFixer())
+        .on('#name', new TitleFixer())
         .transform(results)
 }
 
