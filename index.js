@@ -3,6 +3,9 @@
 /* You should be able to test that this works as expect by running wrangler dev to access your Workers application locally. Visit localhost:8000/links to confirm that your application returns the link array as a JSON response. */
 
 const Router = require('./router')
+const githubIcon = require('simple-icons/icons/github')
+const linkedInIcon = require('simple-icons/icons/linkedin')
+const cloudflareIcon = require('simple-icons/icons/cloudflare')
 
 const linkArray = [
     { name: 'A sample URL', url: 'https://asampleurl.com' },
@@ -57,12 +60,15 @@ class ProfileTransformer {
 class SocialTransformer {
     async element(element) {
         element.removeAttribute('style')
-        element.append(
-            `<a href='someurl.com'><svg xmlns='https://simpleicons.org/icons/github.svg'></svg></a>`,
-            {
-                html: true,
-            }
-        )
+        element.append(`<a href='someurl.com'>${githubIcon.svg}</a>`, {
+            html: true,
+        })
+        element.append(`<a href='someurl.com'>${linkedInIcon.svg}</a>`, {
+            html: true,
+        })
+        element.append(`<a href='someurl.com'>${cloudflareIcon.svg}</a>`, {
+            html: true,
+        })
     }
 }
 
@@ -138,6 +144,8 @@ async function pageHandler(request) {
         .on('title', new TitleTransformer())
         .transform(results)
 }
+
+// we do want to make sure the entire request/transform finishes - maybe a separate line? like: `await rewriter.transform(results).arrayBuffer()?
 
 function linksHandler(request) {
     const init = {

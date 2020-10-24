@@ -13,6 +13,7 @@
         "prettier": "^1.17.0"
     },
     "dependencies": {
-        "serverless-cloudflare-workers": "^1.2.0"
+        "serverless-cloudflare-workers": "^1.2.0",
+        "simple-icons": "^3.12.0"
     }
 }
