@@ -4,8 +4,6 @@
 
 const Router = require('./router')
 
-const sampleText = `Hello worker! You should get this response for all URL endpoints EXCEPT for LINKS. You hit: `
-
 const linkArray = [
     { name: 'A sample URL', url: 'https://asampleurl.com' },
     { name: 'Another sample URL', url: 'https://anothersampleurl.com' },
@@ -29,6 +27,7 @@ class LinksTransformer {
     // This will be called every time that HTMLRewriter detects an element that matches the selector you pass in to the HTMLRewriter - any time it finds one of those tags (i.e. element.tagName === 'meta'), it'll call that function, passing in the element as the function argument
     async element(element) {
         this.links.forEach(link => {
+            // maybe try for/in or for/of? - think for/of
             element.append(`<a href='${link.url}'>${link.name}</a>`, {
                 html: true,
             })
@@ -36,13 +35,25 @@ class LinksTransformer {
     }
 }
 
-class ProfileFixer {
+class ProfileTransformer {
     async element(element) {
         element.removeAttribute('style')
     }
 }
 
-class AvatarFixer {
+class SocialTransformer {
+    async element(element) {
+        element.removeAttribute('style')
+        element.append(
+            `<a href='someurl.com'><svg xmlns='https://simpleicons.org/icons/github.svg'></svg></a>`,
+            {
+                html: true,
+            }
+        )
+    }
+}
+
+class AvatarTransformer {
     async element(element) {
         element.setAttribute(
             'src',
@@ -51,9 +62,15 @@ class AvatarFixer {
     }
 }
 
-class TitleFixer {
+class NameTransformer {
     async element(element) {
-        element.setInnerContent('Alex Whan')
+        element.setInnerContent('alex-whan')
+    }
+}
+
+class BodyTransformer {
+    async element(element) {
+        element.setAttribute('class', 'bg-red-900')
     }
 }
 
@@ -100,9 +117,11 @@ async function pageHandler(request) {
     const results = new Response(preResults, init)
     return new HTMLRewriter()
         .on('#links', new LinksTransformer(linkArray))
-        .on('#profile', new ProfileFixer())
-        .on('#avatar', new AvatarFixer())
-        .on('#name', new TitleFixer())
+        .on('#profile', new ProfileTransformer())
+        .on('#avatar', new AvatarTransformer())
+        .on('#name', new NameTransformer())
+        .on('#social', new SocialTransformer())
+        .on('body', new BodyTransformer())
         .transform(results)
 }
 
