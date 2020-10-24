@@ -36,6 +36,12 @@ class LinksTransformer {
     }
 }
 
+class DocumentHandler {
+    text(text) {
+        text.setInnerContent('Does this work doe?')
+    }
+}
+
 class ProfileTransformer {
     async element(element) {
         element.removeAttribute('style')
@@ -116,14 +122,17 @@ async function pageHandler(request) {
     // const results = await displayLinks(preResults)
     // console.log('RESULTSSSSSSS', results)
     const results = new Response(preResults, init)
-    return new HTMLRewriter()
-        .on('#links', new LinksTransformer(linkArray))
-        .on('#profile', new ProfileTransformer())
-        .on('#avatar', new AvatarTransformer())
-        .on('#name', new NameTransformer())
-        .on('#social', new SocialTransformer())
-        .on('body', new BodyTransformer())
-        .transform(results)
+    return (
+        new HTMLRewriter()
+            .on('div#links', new LinksTransformer(linkArray))
+            .on('div#profile', new ProfileTransformer())
+            .on('img#avatar', new AvatarTransformer())
+            .on('h1#name', new NameTransformer())
+            .on('div#social', new SocialTransformer())
+            .on('body', new BodyTransformer())
+            // .onDocument(new DocumentHandler())
+            .transform(results)
+    )
 }
 
 function linksHandler(request) {
