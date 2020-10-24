@@ -31,6 +31,7 @@ class LinksTransformer {
     }
     // This will be called every time that HTMLRewriter detects an element that matches the selector you pass in to the HTMLRewriter - any time it finds one of those tags (i.e. element.tagName === 'meta'), it'll call that function, passing in the element as the function argument
     async element(element) {
+        console.log('WHAT IS THIS LINKS??', this.links)
         this.links.forEach(link => {
             // maybe try for/in or for/of? - think for/of
             element.append(`<a href='${link.url}'>${link.name}</a>`, {
@@ -130,25 +131,26 @@ async function pageHandler(request) {
         headers: { 'content-type': 'text/html;charset=UTF-8' },
     }
 
+    // Fetches static HTML page
     const response = await fetch(host, init)
     const preResults = await gatherResponse(response)
     const results = new Response(preResults, init)
-    const apiResults = await fetch(apiURL)
-    // const parsedResults = JSON.parse(apiResults.body)
-    // const linkArray = JSON.parse(apiResults.body)
-    // console.log('API RESULTS?', apiResults)
-    // console.log('LINKSSSSS?', linkArray)
-    return (
-        new HTMLRewriter()
-            // .on('div#links', new LinksTransformer(linkArray))
-            .on('div#profile', new ProfileTransformer())
-            .on('img#avatar', new AvatarTransformer())
-            .on('h1#name', new NameTransformer())
-            .on('div#social', new SocialTransformer())
-            .on('body', new BodyTransformer())
-            .on('title', new TitleTransformer())
-            .transform(results)
-    )
+
+    // Fetches links from JSON API
+    const apiResponse = await linksHandler()
+    const jsonArray = await gatherResponse(apiResponse)
+    const links = JSON.parse(jsonArray)
+    console.log('IS THIS A PARSED THING?', links.links)
+
+    return new HTMLRewriter()
+        .on('div#links', new LinksTransformer(links.links))
+        .on('div#profile', new ProfileTransformer())
+        .on('img#avatar', new AvatarTransformer())
+        .on('h1#name', new NameTransformer())
+        .on('div#social', new SocialTransformer())
+        .on('body', new BodyTransformer())
+        .on('title', new TitleTransformer())
+        .transform(results)
 }
 
 // we do want to make sure the entire request/transform finishes - maybe a separate line? like: `await rewriter.transform(results).arrayBuffer()?
@@ -158,9 +160,8 @@ async function linksHandler(request) {
         headers: { 'content-type': 'application/json;charset=UTF-8' },
     }
     const apiResponse = await fetch(apiURL, init)
-    const body = JSON.stringify(apiResponse.body)
     const results = await gatherResponse(apiResponse)
-    console.log('WHAT ARE THE RESULTS>>', results)
+    // console.log('WHAT ARE THE RESULTS>>', results)
     return new Response(results, init)
 }
 
