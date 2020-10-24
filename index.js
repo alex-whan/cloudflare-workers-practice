@@ -1,4 +1,4 @@
-// 'use strict'
+'use strict'
 
 /* You should be able to test that this works as expect by running wrangler dev to access your Workers application locally. Visit localhost:8000/links to confirm that your application returns the link array as a JSON response. */
 
@@ -36,11 +36,17 @@ class LinksTransformer {
     }
 }
 
-class DocumentHandler {
-    text(text) {
-        text.setInnerContent('Does this work doe?')
+class TitleTransformer {
+    async element(element) {
+        element.setInnerContent('Alexander Whan')
     }
 }
+
+// const titleHandler = {
+//     element: element => {
+//         element.setInnerContent('Alexander Whan')
+//     },
+// }
 
 class ProfileTransformer {
     async element(element) {
@@ -122,17 +128,15 @@ async function pageHandler(request) {
     // const results = await displayLinks(preResults)
     // console.log('RESULTSSSSSSS', results)
     const results = new Response(preResults, init)
-    return (
-        new HTMLRewriter()
-            .on('div#links', new LinksTransformer(linkArray))
-            .on('div#profile', new ProfileTransformer())
-            .on('img#avatar', new AvatarTransformer())
-            .on('h1#name', new NameTransformer())
-            .on('div#social', new SocialTransformer())
-            .on('body', new BodyTransformer())
-            // .onDocument(new DocumentHandler())
-            .transform(results)
-    )
+    return new HTMLRewriter()
+        .on('div#links', new LinksTransformer(linkArray))
+        .on('div#profile', new ProfileTransformer())
+        .on('img#avatar', new AvatarTransformer())
+        .on('h1#name', new NameTransformer())
+        .on('div#social', new SocialTransformer())
+        .on('body', new BodyTransformer())
+        .on('title', new TitleTransformer())
+        .transform(results)
 }
 
 function linksHandler(request) {
