@@ -7,6 +7,7 @@ const Router = require('./router')
 const linkArray = [
     { name: 'A sample URL', url: 'https://asampleurl.com' },
     { name: 'Another sample URL', url: 'https://anothersampleurl.com' },
+    // { name: 'Yet another sample URL', url: 'https://yetanothersampleurl.com' },
     { name: 'A final sample URL', url: 'https://afinalsampleurl.com' },
 ]
 
@@ -70,7 +71,7 @@ class NameTransformer {
 
 class BodyTransformer {
     async element(element) {
-        element.setAttribute('class', 'bg-red-900')
+        element.setAttribute('class', 'bg-indigo-800')
     }
 }
 
