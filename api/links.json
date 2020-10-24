@@ -1,0 +1,9 @@
+[
+    { "name": "A sample URL", "url": "https://asampleurl.com" },
+    { "name": "Another sample URL", "url": "https://anothersampleurl.com" },
+    {
+        "name": "Yet another sample URL",
+        "url": "https://yetanothersampleurl.com"
+    },
+    { "name": "A final sample URL", "url": "https://afinalsampleurl.com" }
+]

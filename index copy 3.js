@@ -132,36 +132,30 @@ async function pageHandler(request) {
 
     const response = await fetch(host, init)
     const preResults = await gatherResponse(response)
+    // const results = await displayLinks(preResults)
+    // console.log('RESULTSSSSSSS', results)
     const results = new Response(preResults, init)
-    const apiResults = await fetch(apiURL)
-    // const parsedResults = JSON.parse(apiResults.body)
-    // const linkArray = JSON.parse(apiResults.body)
-    // console.log('API RESULTS?', apiResults)
-    // console.log('LINKSSSSS?', linkArray)
-    return (
-        new HTMLRewriter()
-            // .on('div#links', new LinksTransformer(linkArray))
-            .on('div#profile', new ProfileTransformer())
-            .on('img#avatar', new AvatarTransformer())
-            .on('h1#name', new NameTransformer())
-            .on('div#social', new SocialTransformer())
-            .on('body', new BodyTransformer())
-            .on('title', new TitleTransformer())
-            .transform(results)
-    )
+    // const linkArray = await fetch('./api/links.json')
+    console.log('JSON LINKS>>', linkArray)
+    return new HTMLRewriter()
+        .on('div#links', new LinksTransformer(linkArray))
+        .on('div#profile', new ProfileTransformer())
+        .on('img#avatar', new AvatarTransformer())
+        .on('h1#name', new NameTransformer())
+        .on('div#social', new SocialTransformer())
+        .on('body', new BodyTransformer())
+        .on('title', new TitleTransformer())
+        .transform(results)
 }
 
 // we do want to make sure the entire request/transform finishes - maybe a separate line? like: `await rewriter.transform(results).arrayBuffer()?
 
-async function linksHandler(request) {
+function linksHandler(request) {
     const init = {
-        headers: { 'content-type': 'application/json;charset=UTF-8' },
+        headers: { 'content-type': 'application/json' },
     }
-    const apiResponse = await fetch(apiURL, init)
-    const body = JSON.stringify(apiResponse.body)
-    const results = await gatherResponse(apiResponse)
-    console.log('WHAT ARE THE RESULTS>>', results)
-    return new Response(results, init)
+    const body = JSON.stringify(linkArray)
+    return new Response(body, init)
 }
 
 // add a try/catch block for development
