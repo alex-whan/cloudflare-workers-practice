@@ -7,12 +7,17 @@ const githubIcon = require('simple-icons/icons/github')
 const linkedInIcon = require('simple-icons/icons/linkedin')
 const cloudflareIcon = require('simple-icons/icons/cloudflare')
 
-const linkArray = [
-    { name: 'A sample URL', url: 'https://asampleurl.com' },
-    { name: 'Another sample URL', url: 'https://anothersampleurl.com' },
-    { name: 'Yet another sample URL', url: 'https://yetanothersampleurl.com' },
-    { name: 'A final sample URL', url: 'https://afinalsampleurl.com' },
-]
+const linkArray = {
+    links: [
+        { name: 'HARDCODED', url: 'https://asampleurl.com' },
+        { name: 'Another sample URL', url: 'https://anothersampleurl.com' },
+        {
+            name: 'Yet another sample URL',
+            url: 'https://yetanothersampleurl.com',
+        },
+        { name: 'A final sample URL', url: 'https://afinalsampleurl.com' },
+    ],
+}
 
 const host = `https://static-links-page.signalnerve.workers.dev`
 const apiURL = `https://json-api.alex-whan.workers.dev`
@@ -115,7 +120,7 @@ async function pageHandler(request) {
     // const jsonLinks = await fetch(apiURL)
     // console.log('JSON LINKS>>', JSON.parse(jsonLinks))
     return new HTMLRewriter()
-        .on('div#links', new LinksTransformer(linkArray))
+        .on('div#links', new LinksTransformer(linkArray.links))
         .on('div#profile', new ProfileTransformer())
         .on('img#avatar', new AvatarTransformer())
         .on('h1#name', new NameTransformer())
@@ -132,13 +137,15 @@ async function linksHandler(request) {
         headers: { 'content-type': 'application/json' },
     }
 
-    // const apiResponse = await fetch(apiURL, init)
-    // console.log('API RESPONSE???', apiResponse)
-    // const body = await gatherResponse(apiResponse)
-    // console.log('WHAT ARE THE RESULTS>>', body)
+    // console.log('WHAT IS MY EFFIN REQUEST HERE?', request)
+
+    const apiResponse = await fetch(apiURL)
+    console.log('API RESPONSE???', apiResponse)
+    const results = await gatherResponse(apiResponse)
+    console.log('WHAT ARE THE RESULTS>>', results)
 
     const body = JSON.stringify(linkArray)
-    return new Response(body, init)
+    return new Response(results, init)
 }
 
 // add a try/catch block for development
