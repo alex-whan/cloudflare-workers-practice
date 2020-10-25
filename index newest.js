@@ -1,38 +1,25 @@
 'use strict'
 
-/* You should be able to test that this works as expect by running wrangler dev to access your Workers application locally. Visit localhost:8000/links to confirm that your application returns the link array as a JSON response. */
+addEventListener('fetch', event => {
+    event.respondWith(handleRequest(event.request))
+})
 
 const Router = require('./router')
 const githubIcon = require('simple-icons/icons/github')
 const linkedInIcon = require('simple-icons/icons/linkedin')
 const cloudflareIcon = require('simple-icons/icons/cloudflare')
 
-// const linkArray = [
-//     { name: 'A sample URL', url: 'https://asampleurl.com' },
-//     { name: 'Another sample URL', url: 'https://anothersampleurl.com' },
-//     { name: 'Yet another sample URL', url: 'https://yetanothersampleurl.com' },
-//     { name: 'A final sample URL', url: 'https://afinalsampleurl.com' },
-// ]
-
 const host = `https://static-links-page.signalnerve.workers.dev`
-const apiURL = `https://json-api.alex-whan.workers.dev`
-
-// There are two handler types that can be used with HTMLRewriter: element handlers and document handlers
-
-// new HTMLRewriter()
-//     .on('*', new ElementHandler())
-//     .onDocument(new DocumentHandler())
-
-// element.tagName (useful one)
+// const apiURL = `https://json-api.alex-whan.workers.dev`
+const apiURL = `http://localhost:8787`
 
 class LinksTransformer {
     constructor(links) {
         this.links = links
     }
-    // This will be called every time that HTMLRewriter detects an element that matches the selector you pass in to the HTMLRewriter - any time it finds one of those tags (i.e. element.tagName === 'meta'), it'll call that function, passing in the element as the function argument
+
     async element(element) {
         this.links.forEach(link => {
-            // maybe try for/in or for/of? - think for/of
             element.append(`<a href='${link.url}'>${link.name}</a>`, {
                 html: true,
             })
@@ -45,12 +32,6 @@ class TitleTransformer {
         element.setInnerContent('Alexander Whan')
     }
 }
-
-// const titleHandler = {
-//     element: element => {
-//         element.setInnerContent('Alexander Whan')
-//     },
-// }
 
 class ProfileTransformer {
     async element(element) {
@@ -94,21 +75,9 @@ class BodyTransformer {
     }
 }
 
-// async function displayLinks(response, links) {
-//     const rewriter = new HTMLRewriter().on(
-//         '#links',
-//         new LinksTransformer(linkArray)
-//     )
-//     const returnRewriter = await rewriter.transform(response)
-//     return returnRewriter
-// }
-
 /**
  * Example of how router can be used in an application
  *  */
-addEventListener('fetch', event => {
-    event.respondWith(handleRequest(event.request))
-})
 
 async function gatherResponse(response) {
     const { headers } = response
@@ -130,15 +99,19 @@ async function pageHandler(request) {
         headers: { 'content-type': 'text/html;charset=UTF-8' },
     }
 
+    // Fetches static HTML page
     const response = await fetch(host, init)
     const preResults = await gatherResponse(response)
-    // const results = await displayLinks(preResults)
-    // console.log('RESULTSSSSSSS', results)
     const results = new Response(preResults, init)
-    // const linkArray = await fetch('./api/links.json')
-    console.log('JSON LINKS>>', linkArray)
+
+    // Fetches links from JSON API
+    const apiResponse = await linksHandler()
+    const jsonArray = await gatherResponse(apiResponse)
+    const links = JSON.parse(jsonArray)
+    // console.log('IS THIS A PARSED THING?', links.links)
+
     return new HTMLRewriter()
-        .on('div#links', new LinksTransformer(linkArray))
+        .on('div#links', new LinksTransformer(links.links))
         .on('div#profile', new ProfileTransformer())
         .on('img#avatar', new AvatarTransformer())
         .on('h1#name', new NameTransformer())
@@ -150,12 +123,15 @@ async function pageHandler(request) {
 
 // we do want to make sure the entire request/transform finishes - maybe a separate line? like: `await rewriter.transform(results).arrayBuffer()?
 
-function linksHandler(request) {
+async function linksHandler(request) {
     const init = {
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json;charset=UTF-8' },
     }
-    const body = JSON.stringify(linkArray)
-    return new Response(body, init)
+    const apiResponse = await fetch(apiURL, init)
+    console.log('API RESPONSE???', apiResponse)
+    const results = await gatherResponse(apiResponse)
+    // console.log('WHAT ARE THE RESULTS>>', results)
+    return new Response(results, init)
 }
 
 // add a try/catch block for development
@@ -167,12 +143,3 @@ async function handleRequest(request) {
     const res = await router.route(request)
     return res
 }
-
-// fetch('https://static-links-page.signalnerve.workers.dev')
-
-/* With your API deployed, you can flesh out the rest of your application. If the path requested is not /links, your application should render a static HTML page, by doing the following steps:
-
-1. Retrieve a static HTML page
-2. Get the links from your previously deployed JSON response
-3. Use HTMLRewriter to add these links to the static HTML page
-4. Return the transformed HTML page from the Worker */
