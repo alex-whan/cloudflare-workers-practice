@@ -1,5 +1,9 @@
 'use strict'
 
+addEventListener('fetch', event => {
+    event.respondWith(handleRequest(event.request))
+})
+
 const Router = require('./router')
 const githubIcon = require('simple-icons/icons/github')
 const linkedInIcon = require('simple-icons/icons/linkedin')
@@ -8,6 +12,7 @@ const cloudflareIcon = require('simple-icons/icons/cloudflare')
 const host = `https://static-links-page.signalnerve.workers.dev`
 const apiURL = `https://new-json-api.whana.workers.dev/`
 
+// Transformers for incoming static HTML elements
 class LinksTransformer {
     constructor(links) {
         this.links = links
@@ -69,10 +74,7 @@ class BodyTransformer {
     }
 }
 
-addEventListener('fetch', event => {
-    event.respondWith(handleRequest(event.request))
-})
-
+// Gathers Response object from API
 async function gatherResponse(response) {
     const { headers } = response
     const contentType = headers.get('content-type') || ''
@@ -87,6 +89,7 @@ async function gatherResponse(response) {
     }
 }
 
+// Handles all endpoints excluding /links
 async function pageHandler(request) {
     const init = {
         headers: { 'content-type': 'text/html;charset=UTF-8' },
@@ -113,6 +116,7 @@ async function pageHandler(request) {
         .transform(results)
 }
 
+// Handles /links endpoint
 async function linksHandler(request) {
     const init = {
         headers: {
@@ -124,6 +128,7 @@ async function linksHandler(request) {
     return new Response(results, init)
 }
 
+// Handles endpoints
 async function handleRequest(request) {
     const router = new Router()
     router.get('.*/links', request => linksHandler(request))
